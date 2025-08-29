@@ -38,7 +38,7 @@ export default function Home() {
     if (toCityCentre) {
       const fares = getCityCentreFares();
       return (
-        'Estimated taxi fares from Helsinki airport to city centre:' +
+        'Fixed taxi fares from Helsinki airport to city centre:' +
         '\n\n' +
         fares
           .map((fare) => `${fare.company}: ${fare.fare.toFixed(2)}€`)
@@ -175,7 +175,7 @@ export default function Home() {
 
           {toCityCentre && (
             <>
-              <h2>Estimated Fares to City Centre:</h2>
+              <h2>Fixed Fares to City Centre:</h2>
               <ul>
                 {getCityCentreFares().map((fare, idx) => (
                   <li key={fare.company}>
