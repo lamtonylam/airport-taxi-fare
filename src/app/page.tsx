@@ -9,6 +9,30 @@ export default function Home() {
   const [toCityCentre, setToCityCentre] = useState(false);
   const [fares, setFares] = useState<{ company: string; fare: number }[]>([]);
 
+  const formatFaresForShare = () => {
+    if (toCityCentre) {
+      const fares = getCityCentreFares();
+      return (
+        'Estimated taxi fares from Helsinki airport to city centre:' +
+        '\n\n' +
+        fares
+          .map((fare) => `${fare.company}: ${fare.fare.toFixed(2)}€`)
+          .join('\n') +
+        '\n\nCalculated using https://taxi.ynot.fi'
+      );
+    } else if (distance > 0 && fares.length > 0) {
+      return (
+        `Estimated taxi fares from Helsinki airport for ${distance} km:` +
+        '\n\n' +
+        fares
+          .map((fare) => `${fare.company}: ${fare.fare.toFixed(2)}€`)
+          .join('\n') +
+        '\n\nCalculated using https://taxi.ynot.fi'
+      );
+    }
+    return '';
+  };
+
   const calculateFare = (km: number, company: TaxiCompanies) => {
     const prices = TaxiPrices[company];
     if (!prices) return 0;
@@ -88,47 +112,74 @@ export default function Home() {
         </div>
       )}
 
-      {!toCityCentre && distance > 0 && (
-        <div className="flex flex-col">
-          <h2>Estimated Fares:</h2>
-          <ul>
-            {fares.map((fare, idx) => (
-              <li key={fare.company}>
-                {idx === 0 ? (
-                  <b>
-                    {fare.company}: {fare.fare.toFixed(2)}€
-                  </b>
-                ) : (
-                  <>
-                    {fare.company}: {fare.fare.toFixed(2)}€
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div className="flex flex-col justify-center items-center">
+        {!toCityCentre && distance > 0 && (
+          <>
+            <h2>Estimated Fares:</h2>
+            <ul>
+              {fares.map((fare, idx) => (
+                <li key={fare.company}>
+                  {idx === 0 ? (
+                    <b>
+                      {fare.company}: {fare.fare.toFixed(2)}€
+                    </b>
+                  ) : (
+                    <>
+                      {fare.company}: {fare.fare.toFixed(2)}€
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
 
-      {toCityCentre && (
-        <div className="flex flex-col gap-2">
-          <h2>Estimated Fares to City Centre:</h2>
-          <ul>
-            {getCityCentreFares().map((fare, idx) => (
-              <li key={fare.company}>
-                {idx === 0 ? (
-                  <b>
-                    {fare.company}: {fare.fare.toFixed(2)}€
-                  </b>
-                ) : (
-                  <>
-                    {fare.company}: {fare.fare.toFixed(2)}€
-                  </>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {toCityCentre && (
+          <>
+            <h2>Estimated Fares to City Centre:</h2>
+            <ul>
+              {getCityCentreFares().map((fare, idx) => (
+                <li key={fare.company}>
+                  {idx === 0 ? (
+                    <b>
+                      {fare.company}: {fare.fare.toFixed(2)}€
+                    </b>
+                  ) : (
+                    <>
+                      {fare.company}: {fare.fare.toFixed(2)}€
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {(toCityCentre || (distance > 0 && fares.length > 0)) && (
+          <div className="flex gap-3 justify-center mb-2 pt-[30px]">
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(
+                formatFaresForShare(),
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 flex items-center gap-2"
+            >
+              <span>Share fares on WhatsApp</span>
+            </a>
+            <a
+              href={`https://t.me/share/url?url=${encodeURIComponent(
+                formatFaresForShare(),
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-2"
+            >
+              <span>Share fares on Telegram</span>
+            </a>
+          </div>
+        )}
+      </div>
 
       <div className="flex flex-col gap-2">
         <hr />
