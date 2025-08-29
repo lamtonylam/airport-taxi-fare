@@ -65,9 +65,7 @@ export default function Home() {
 
   return (
     <div
-      className="font-sans grid items-center justify-items-center gap-17 mx-auto"
-      style={{ maxWidth: 500 }}
-    >
+      className="font-sans grid items-center justify-items-center gap-17 mx-auto" >
       <h1 className="text-3xl font-bold text-center mb-6 pt-5">
         Helsinki airport
         <br />
@@ -75,8 +73,8 @@ export default function Home() {
       </h1>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="toCityCentre" className="flex items-center gap-2 mb-2">
-          <span>Are you travelling to the Helsinki city centre? :</span>
+        <label htmlFor="toCityCentre" className="flex items-center gap-2 mb-2 px-4">
+          <span>Are you travelling to the Helsinki city centre?</span>
           <input
             type="checkbox"
             id="toCityCentre"
@@ -86,11 +84,6 @@ export default function Home() {
             className="mr-2"
           />
         </label>
-        <p style={{ maxWidth: '400px' }}>
-          Postal codes: 00100-00180, 00220. Additionally, hotels: Scandic Park,
-          Crowne Plaza Helsinki Hesperia, Hilton Helsinki Strand, Scandic Paasi,
-          Scandic Hakaniemi
-        </p>
       </div>
 
       {!toCityCentre && (
@@ -156,7 +149,7 @@ export default function Home() {
         )}
 
         {(toCityCentre || (distance > 0 && fares.length > 0)) && (
-          <div className="flex gap-3 justify-center mb-2 pt-[30px]">
+          <div className="flex gap-3 justify-center mb-2 pt-[30px] px-8">
             <a
               href={`https://wa.me/?text=${encodeURIComponent(
                 formatFaresForShare(),
