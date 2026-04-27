@@ -1,91 +1,27 @@
 'use client';
-import { useState } from 'react';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import TextField from '@mui/material/TextField';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-import { TaxiPrices } from '@/data/prices';
-import { TaxiCompanies } from '@/data/prices';
+import { useState, useMemo } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
+import { theme } from '@/theme';
 
-const theme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
-  components: {
-    MuiOutlinedInput: {
-      styleOverrides: {
-        notchedOutline: {
-          borderColor: '#fff',
-        },
-      },
-    },
-    MuiInputLabel: {
-      styleOverrides: {
-        root: {
-          color: '#fff',
-        },
-      },
-    },
-  },
-});
+import { CityCentreToggle } from '@/components/CityCentreToggle';
+import { DistanceInput } from '@/components/DistanceInput';
+import { FareList } from '@/components/FareList';
+import { ShareButtons } from '@/components/ShareButtons';
+import { InfoFooter } from '@/components/InfoFooter';
+
+import { getFares, getCityCentreFares, Fare } from '@/lib/fare';
+
 export default function Home() {
   const [distance, setDistance] = useState(0);
   const [toCityCentre, setToCityCentre] = useState(false);
-  const [fares, setFares] = useState<{ company: string; fare: number }[]>([]);
+  const [fares, setFares] = useState<Fare[]>([]);
 
-  const formatFaresForShare = () => {
-    if (toCityCentre) {
-      const fares = getCityCentreFares();
-      return (
-        'Fixed taxi fares from Helsinki airport to city centre:' +
-        '\n\n' +
-        fares
-          .map((fare) => `${fare.company}: ${fare.fare.toFixed(2)}€`)
-          .join('\n') +
-        '\n\nCalculated using https://taxi.ynot.fi'
-      );
-    } else if (distance > 0 && fares.length > 0) {
-      return (
-        `Estimated taxi fares from Helsinki airport for ${distance} km:` +
-        '\n\n' +
-        fares
-          .map((fare) => `${fare.company}: ${fare.fare.toFixed(2)}€`)
-          .join('\n') +
-        '\n\nCalculated using https://taxi.ynot.fi'
-      );
-    }
-    return '';
-  };
+  const cityCentreFares = useMemo(() => getCityCentreFares(), []);
 
-  const calculateFare = (km: number, company: TaxiCompanies) => {
-    const prices = TaxiPrices[company];
-    if (!prices) return 0;
-
-    if (km <= 5) {
-      return prices.priceTo5Km;
-    }
-
-    return prices.startingFare + prices.pricePerKm * km;
-  };
-
-  const getFares = (km: number) => {
-    return Object.keys(TaxiPrices)
-      .map((company) => ({
-        company: TaxiPrices[company].companyName,
-        companyName: company,
-        fare: calculateFare(km, company as TaxiCompanies),
-      }))
-      .sort((a, b) => a.fare - b.fare);
-  };
-
-  const getCityCentreFares = () => {
-    return Object.keys(TaxiPrices)
-      .map((company) => ({
-        company: TaxiPrices[company].companyName,
-        fare: TaxiPrices[company].priceToCityCentre,
-      }))
-      .sort((a, b) => a.fare - b.fare);
+  const handleDistanceChange = (km: number) => {
+    setDistance(km);
+    setFares(getFares(km));
   };
 
   return (
@@ -97,144 +33,35 @@ export default function Home() {
           taxi fare calculator
         </h1>
 
-        <div className="flex flex-col gap-2">
-          <FormControlLabel
-            control={
-              <Checkbox
-                id="toCityCentre"
-                name="toCityCentre"
-                checked={toCityCentre}
-                onChange={(e) => setToCityCentre(e.target.checked)}
-                sx={{
-                  color: '#ededed',
-                  '&.Mui-checked': {
-                    color: '#90caf9',
-                  },
-                }}
-              />
-            }
-            label="Are you travelling to the Helsinki city centre?"
-            className="mb-2 px-4"
-          />
-        </div>
+        <CityCentreToggle checked={toCityCentre} onChange={setToCityCentre} />
 
         {!toCityCentre && (
-          <div className="flex flex-col gap-2">
-            <TextField
-              id="distance"
-              label="Distance (km)"
-              type="number"
-              variant="outlined"
-              value={distance === 0 ? '' : distance}
-              onChange={(e) => {
-                const km = Number(e.target.value) || 0;
-                setDistance(km);
-                setFares(getFares(km));
-              }}
-              inputProps={{ min: 0 }}
-              sx={{
-                input: { color: '#fff' },
-                label: { color: '#fff' },
-                '& .MuiOutlinedInput-root': {
-                  '& fieldset': {
-                    borderColor: '#fff',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: '#fff',
-                  },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#fff',
-                  },
-                },
-              }}
-            />
-          </div>
+          <DistanceInput value={distance} onChange={handleDistanceChange} />
         )}
 
         <div className="flex flex-col justify-center items-center">
-          {!toCityCentre && distance > 0 && (
-            <>
-              <h2>Estimated Fares:</h2>
-              <ul>
-                {fares.map((fare, idx) => (
-                  <li key={fare.company}>
-                    {idx === 0 ? (
-                      <b>
-                        {fare.company}: {fare.fare.toFixed(2)}€
-                      </b>
-                    ) : (
-                      <>
-                        {fare.company}: {fare.fare.toFixed(2)}€
-                      </>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </>
+          {!toCityCentre && distance > 0 && fares.length > 0 && (
+            <FareList title="Estimated Fares:" fares={fares} />
           )}
 
           {toCityCentre && (
-            <>
-              <h2>Fixed Fares to City Centre:</h2>
-              <ul>
-                {getCityCentreFares().map((fare, idx) => (
-                  <li key={fare.company}>
-                    {idx === 0 ? (
-                      <b>
-                        {fare.company}: {fare.fare.toFixed(2)}€
-                      </b>
-                    ) : (
-                      <>
-                        {fare.company}: {fare.fare.toFixed(2)}€
-                      </>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </>
+            <FareList
+              title="Fixed Fares to City Centre:"
+              fares={cityCentreFares}
+            />
           )}
 
           {(toCityCentre || (distance > 0 && fares.length > 0)) && (
-            <div className="flex gap-3 justify-center mb-2 pt-[30px] px-8">
-              <a
-                href={`https://wa.me/?text=${encodeURIComponent(
-                  formatFaresForShare(),
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 flex items-center gap-2"
-              >
-                <span>Share fares on WhatsApp</span>
-              </a>
-              <a
-                href={`https://t.me/share/url?url=${encodeURIComponent(
-                  formatFaresForShare(),
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center gap-2"
-              >
-                <span>Share fares on Telegram</span>
-              </a>
-            </div>
+            <ShareButtons
+              toCityCentre={toCityCentre}
+              distance={distance}
+              fares={fares}
+              cityCentreFares={cityCentreFares}
+            />
           )}
         </div>
 
-        <div className="flex flex-col gap-2">
-          <hr />
-          <p>Prices last updated 29.08.2025</p>
-          <p>
-            Only for informational purposes. <br /> Not affiliated with Finavia
-            or taxi companies
-          </p>
-          <p>Feedback:</p>
-          <a
-            href="mailto:helsinki-taxifare@ynot.fi"
-            className="text-blue-600 underline hover:text-blue-800"
-          >
-            helsinki-taxifare@ynot.fi
-          </a>
-        </div>
+        <InfoFooter />
       </div>
     </ThemeProvider>
   );
