@@ -13,7 +13,7 @@ export const DistanceInput = ({ value, onChange }: DistanceInputProps) => (
     variant="outlined"
     value={value === 0 ? '' : value}
     onChange={(e) => {
-      const km = Number(e.target.value) || 0;
+      const km = Math.max(0, Number(e.target.value)) || 0;
       onChange(km);
     }}
     inputProps={{ min: 0 }}
