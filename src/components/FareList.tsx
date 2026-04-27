@@ -11,9 +11,9 @@ export const FareList = ({ title, fares }: FareListProps) => {
     <>
       <h2>{title}</h2>
       <ul>
-        {fares.map((fare, idx) => (
+        {fares.map((fare, index) => (
           <li key={fare.company}>
-            {idx === 0 ? (
+            {index === 0 ? (
               <b>
                 {fare.company}: {fare.fare.toFixed(2)}€
               </b>
