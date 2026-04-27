@@ -21,9 +21,9 @@ export const calculateFare = (km: number, company: TaxiCompanies): number => {
     return prices.priceTo5Km;
   }
 
-  // For distances beyond 5 km, charge the starting fare plus per‑km rate for the excess distance
+  // For distances beyond 5 km, charge the first 5 km fare plus per‑km rate for the excess distance
   const excessKm = km - 5;
-  return prices.startingFare + prices.pricePerKm * excessKm;
+  return prices.priceTo5Km + prices.pricePerKm * excessKm;
 };
 
 /** Get sorted list of fares for a specific distance. */
